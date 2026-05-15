@@ -1,14 +1,13 @@
 import { useAuth } from '../../contexts/AuthContext';
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Alert, FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from "react-native";
-import { SignOutButton } from "../../components/SignOutButton";
 import { useTransactions } from "@/hooks/useTransaction";
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useFocusEffect } from "expo-router";
 import PageLoader from "@/components/PageLoader";
 import { styles } from "../../assets/styles/home.styles";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "../../constants/colors";
+import { THEMES } from "../../constants/colors";
 import { BalanceCard } from "../../components/BalanceCard";
 import { TransactionItem } from "../../components/TransactionItem";
 import NoTransactionsFound from "../../components/NoTransactionsFound";
@@ -16,6 +15,7 @@ import NoTransactionsFound from "../../components/NoTransactionsFound";
 export default function Page() {
   const { user, token } = useAuth();
   const router = useRouter();
+  const colors = THEMES[user?.theme || "purple"];
   const [refreshing, setRefreshing] = useState(false);
 
   const { transactions, summary, isLoading, loadData, deleteTransaction } = useTransactions(
@@ -29,8 +29,6 @@ export default function Page() {
     setRefreshing(false);
   };
 
-
-  
   useFocusEffect(
     useCallback(() => {
       loadData();
@@ -47,10 +45,10 @@ export default function Page() {
   if (isLoading && !refreshing) return <PageLoader />;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
         {/* HEADER */}
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
           {/* LEFT */}
           <View style={styles.headerLeft}>
             <Image
@@ -59,29 +57,31 @@ export default function Page() {
               resizeMode="contain"
             />
             <View style={styles.welcomeContainer}>
-              <Text style={styles.welcomeText}>Welcome,</Text>
-              <Text style={styles.usernameText}>
+              <Text style={[styles.welcomeText, { color: colors.textLight }]}>Welcome,</Text>
+              <Text style={[styles.usernameText, { color: colors.text }]}>
                 {user?.name || user?.email?.split("@")[0]}
               </Text>
             </View>
           </View>
           {/* RIGHT */}
           <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.addButton} onPress={() => router.push("/create")}>
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: colors.primary }]}
+              onPress={() => router.push("/create")}
+            >
               <Ionicons name="add" size={20} color="#FFF" />
               <Text style={styles.addButtonText}>Add</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push("/profile")}>
-  <Ionicons name="person-circle-outline" size={28} color={COLORS.primary} />
-</TouchableOpacity>
-            <SignOutButton />
           </View>
         </View>
 
-        <BalanceCard summary={summary} />
+        <BalanceCard summary={summary} userCurrency={user?.currency || "USD"} />
 
         <View style={styles.transactionsHeaderContainer}>
-          <Text style={styles.sectionTitle}>Recent Transactions</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Transactions</Text>
+          {summary.month && (
+            <Text style={{ fontSize: 12, color: colors.textLight }}>{summary.month}</Text>
+          )}
         </View>
       </View>
 
@@ -89,10 +89,12 @@ export default function Page() {
         style={styles.transactionsList}
         contentContainerStyle={styles.transactionsListContent}
         data={transactions}
-        renderItem={({ item }) => <TransactionItem item={item} onDelete={handleDelete} />}
+        renderItem={({ item }) => (
+          <TransactionItem item={item} onDelete={handleDelete} userCurrency={user?.currency || "USD"} />
+        )}
         ListEmptyComponent={<NoTransactionsFound />}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       />
     </View>
   );
