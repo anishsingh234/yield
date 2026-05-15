@@ -1,18 +1,26 @@
-import { useAuth } from '../../contexts/AuthContext';
-import { useRouter } from "expo-router";
-import { Alert, FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
-import { useTransactions } from "@/hooks/useTransaction";
-import { useCallback, useState } from "react";
-import { useFocusEffect } from "expo-router";
 import PageLoader from "@/components/PageLoader";
-import { styles } from "../../assets/styles/home.styles";
+import { useTransactions } from "@/hooks/useTransaction";
 import { Ionicons } from "@expo/vector-icons";
-import { THEMES } from "../../constants/colors";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import {
+    Alert,
+    FlatList,
+    Image,
+    RefreshControl,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import {
+    useSafeAreaInsets
+} from "react-native-safe-area-context";
+import { styles } from "../../assets/styles/home.styles";
 import { BalanceCard } from "../../components/BalanceCard";
-import { TransactionItem } from "../../components/TransactionItem";
 import NoTransactionsFound from "../../components/NoTransactionsFound";
+import { TransactionItem } from "../../components/TransactionItem";
+import { THEMES } from "../../constants/colors";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function Page() {
   const { user, token } = useAuth();
@@ -21,10 +29,8 @@ export default function Page() {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
 
-  const { transactions, summary, isLoading, loadData, deleteTransaction } = useTransactions(
-    user?.id,
-    token
-  );
+  const { transactions, summary, isLoading, loadData, deleteTransaction } =
+    useTransactions(user?.id, token);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -35,14 +41,22 @@ export default function Page() {
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [loadData])
+    }, [loadData]),
   );
 
   const handleDelete = (id) => {
-    Alert.alert("Delete Transaction", "Are you sure you want to delete this transaction?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Delete", style: "destructive", onPress: () => deleteTransaction(id) },
-    ]);
+    Alert.alert(
+      "Delete Transaction",
+      "Are you sure you want to delete this transaction?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => deleteTransaction(id),
+        },
+      ],
+    );
   };
 
   if (isLoading && !refreshing) return <PageLoader />;
@@ -54,25 +68,29 @@ export default function Page() {
         <View style={styles.header}>
           {/* LEFT */}
           <View style={styles.headerLeft}>
-            <View style={{
-              width: 48,
-              height: 48,
-              borderRadius: 16,
-              backgroundColor: colors.glass,
-              borderWidth: 1,
-              borderColor: colors.glassBorder,
-              justifyContent: "center",
-              alignItems: "center",
-              overflow: "hidden",
-            }}>
+            <View
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 16,
+                backgroundColor: colors.glass,
+                borderWidth: 1,
+                borderColor: colors.glassBorder,
+                justifyContent: "center",
+                alignItems: "center",
+                overflow: "hidden",
+              }}
+            >
               <Image
-                source={require("../../assets/images/yield.jpeg")}
+                source={require("../../assets/images/ic_launcher.png")}
                 style={{ width: 48, height: 48, borderRadius: 16 }}
                 resizeMode="cover"
               />
             </View>
             <View style={styles.welcomeContainer}>
-              <Text style={[styles.welcomeText, { color: colors.textLight }]}>Welcome back 👋</Text>
+              <Text style={[styles.welcomeText, { color: colors.textLight }]}>
+                Welcome back 👋
+              </Text>
               <Text style={[styles.usernameText, { color: colors.text }]}>
                 {user?.name || user?.email?.split("@")[0]}
               </Text>
@@ -94,17 +112,27 @@ export default function Page() {
         <BalanceCard summary={summary} userCurrency={user?.currency || "USD"} />
 
         <View style={styles.transactionsHeaderContainer}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Transactions</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Recent Transactions
+          </Text>
           {transactions?.length > 0 && (
-            <View style={{
-              backgroundColor: colors.glass,
-              paddingHorizontal: 10,
-              paddingVertical: 4,
-              borderRadius: 10,
-              borderWidth: 1,
-              borderColor: colors.glassBorder,
-            }}>
-              <Text style={{ fontSize: 11, color: colors.primary, fontWeight: "600" }}>
+            <View
+              style={{
+                backgroundColor: colors.glass,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 10,
+                borderWidth: 1,
+                borderColor: colors.glassBorder,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 11,
+                  color: colors.primary,
+                  fontWeight: "600",
+                }}
+              >
                 {transactions.length} total
               </Text>
             </View>
@@ -117,11 +145,21 @@ export default function Page() {
         contentContainerStyle={styles.transactionsListContent}
         data={transactions}
         renderItem={({ item }) => (
-          <TransactionItem item={item} onDelete={handleDelete} userCurrency={user?.currency || "USD"} />
+          <TransactionItem
+            item={item}
+            onDelete={handleDelete}
+            userCurrency={user?.currency || "USD"}
+          />
         )}
         ListEmptyComponent={<NoTransactionsFound />}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
+        }
       />
     </View>
   );
