@@ -9,11 +9,13 @@ import {
   Modal,
   ActivityIndicator,
   Alert,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { THEMES } from "../../constants/colors";
 import { useAuth } from "../../contexts/AuthContext";
+import { LinearGradient } from "expo-linear-gradient";
 
 const ALL_CURRENCIES = [
   { code: "USD", symbol: "$", name: "US Dollar", flag: "🇺🇸" },
@@ -42,6 +44,7 @@ const RATES_API = "https://api.frankfurter.app/latest";
 export default function ConverterScreen() {
   const { user } = useAuth();
   const colors = THEMES[user?.theme || "purple"];
+  const insets = useSafeAreaInsets();
 
   const [fromCurrency, setFromCurrency] = useState(
     ALL_CURRENCIES.find((c) => c.code === (user?.currency || "USD")) || ALL_CURRENCIES[0]
@@ -124,14 +127,19 @@ export default function ConverterScreen() {
     : null;
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <View style={[styles.safeArea, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+      <LinearGradient
+        colors={colors.gradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.header, { paddingTop: insets.top + 20, paddingBottom: 24 }]}
+      >
         <Text style={styles.headerTitle}>Currency Converter</Text>
         <Text style={styles.headerSubtitle}>Live Exchange Rates</Text>
-      </View>
+      </LinearGradient>
 
-      <View style={styles.content}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Rate Badge */}
         {formattedRate && !isLoading && (
           <View style={[styles.rateBadge, { backgroundColor: colors.primary + "15", borderColor: colors.primary + "30" }]}>
@@ -147,19 +155,19 @@ export default function ConverterScreen() {
           </View>
         )}
         {isLoading && (
-          <View style={[styles.rateBadge, { backgroundColor: colors.border }]}>
+          <View style={[styles.rateBadge, { backgroundColor: colors.glass }]}>
             <ActivityIndicator size="small" color={colors.primary} />
             <Text style={[styles.rateText, { color: colors.textLight }]}>Fetching rates...</Text>
           </View>
         )}
 
         {/* Converter Card */}
-        <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.shadow }]}>
+        <View style={[styles.card, { backgroundColor: colors.cardSolid, borderWidth: 1, borderColor: colors.glassBorder }]}>
 
           {/* FROM */}
           <Text style={[styles.label, { color: colors.textLight }]}>From</Text>
-          <View style={[styles.inputRow, { borderColor: colors.border, backgroundColor: colors.background }]}>
-            <TouchableOpacity style={[styles.currencyPicker, { borderRightColor: colors.border }]} onPress={() => openModal("from")}>
+          <View style={[styles.inputRow, { borderColor: colors.glassBorder, backgroundColor: colors.inputBg }]}>
+            <TouchableOpacity style={[styles.currencyPicker, { borderRightColor: colors.glassBorder }]} onPress={() => openModal("from")}>
               <Text style={styles.flag}>{fromCurrency.flag}</Text>
               <Text style={[styles.currencyCode, { color: colors.text }]}>{fromCurrency.code}</Text>
               <Ionicons name="chevron-down" size={14} color={colors.textLight} />
@@ -180,13 +188,13 @@ export default function ConverterScreen() {
             onPress={handleSwap}
             activeOpacity={0.8}
           >
-            <Ionicons name="swap-vertical" size={20} color="#fff" />
+            <Ionicons name="swap-vertical" size={20} color="#0A0812" />
           </TouchableOpacity>
 
           {/* TO */}
           <Text style={[styles.label, { color: colors.textLight }]}>To</Text>
-          <View style={[styles.inputRow, { borderColor: colors.border, backgroundColor: colors.background }]}>
-            <TouchableOpacity style={[styles.currencyPicker, { borderRightColor: colors.border }]} onPress={() => openModal("to")}>
+          <View style={[styles.inputRow, { borderColor: colors.glassBorder, backgroundColor: colors.inputBg }]}>
+            <TouchableOpacity style={[styles.currencyPicker, { borderRightColor: colors.glassBorder }]} onPress={() => openModal("to")}>
               <Text style={styles.flag}>{toCurrency.flag}</Text>
               <Text style={[styles.currencyCode, { color: colors.text }]}>{toCurrency.code}</Text>
               <Ionicons name="chevron-down" size={14} color={colors.textLight} />
@@ -211,11 +219,11 @@ export default function ConverterScreen() {
               key={val}
               style={[
                 styles.quickBtn,
-                { borderColor: colors.border, backgroundColor: amount === val ? colors.primary : colors.card },
+                { borderColor: colors.glassBorder, backgroundColor: amount === val ? colors.primary : colors.glass },
               ]}
               onPress={() => setAmount(val)}
             >
-              <Text style={[styles.quickBtnText, { color: amount === val ? "#fff" : colors.text }]}>
+              <Text style={[styles.quickBtnText, { color: amount === val ? "#0A0812" : colors.text }]}>
                 {val}
               </Text>
             </TouchableOpacity>
@@ -231,18 +239,18 @@ export default function ConverterScreen() {
           <Ionicons name="refresh-outline" size={16} color={colors.primary} />
           <Text style={[styles.refreshText, { color: colors.primary }]}>Refresh Rates</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
 
       {/* Currency Picker Modal */}
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalSheet, { backgroundColor: colors.card }]}>
+          <View style={[styles.modalSheet, { backgroundColor: colors.cardSolid }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>
               Select {selectingFor === "from" ? "From" : "To"} Currency
             </Text>
 
             {/* Search */}
-            <View style={[styles.searchBar, { borderColor: colors.border, backgroundColor: colors.background }]}>
+            <View style={[styles.searchBar, { borderColor: colors.glassBorder, backgroundColor: colors.inputBg }]}>
               <Ionicons name="search-outline" size={16} color={colors.textLight} />
               <TextInput
                 style={[styles.searchInput, { color: colors.text }]}
@@ -264,7 +272,7 @@ export default function ConverterScreen() {
                     : toCurrency.code === item.code;
                 return (
                   <TouchableOpacity
-                    style={[styles.modalItem, { borderBottomColor: colors.border, backgroundColor: isSelected ? colors.primary + "10" : "transparent" }]}
+                    style={[styles.modalItem, { borderBottomColor: colors.glassBorder, backgroundColor: isSelected ? colors.primary + "10" : "transparent" }]}
                     onPress={() => handleSelectCurrency(item)}
                   >
                     <Text style={styles.modalFlag}>{item.flag}</Text>
@@ -288,14 +296,13 @@ export default function ConverterScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   header: {
-    paddingVertical: 24,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,

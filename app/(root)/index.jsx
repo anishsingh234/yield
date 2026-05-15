@@ -1,6 +1,8 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from "expo-router";
 import { Alert, FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { useTransactions } from "@/hooks/useTransaction";
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "expo-router";
@@ -16,6 +18,7 @@ export default function Page() {
   const { user, token } = useAuth();
   const router = useRouter();
   const colors = THEMES[user?.theme || "purple"];
+  const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
 
   const { transactions, summary, isLoading, loadData, deleteTransaction } = useTransactions(
@@ -45,19 +48,31 @@ export default function Page() {
   if (isLoading && !refreshing) return <PageLoader />;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <View style={[styles.content, { paddingTop: insets.top + 20 }]}>
         {/* HEADER */}
-        <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+        <View style={styles.header}>
           {/* LEFT */}
           <View style={styles.headerLeft}>
-            <Image
-              source={require("../../assets/images/yield.jpeg")}
-              style={styles.headerLogo}
-              resizeMode="contain"
-            />
+            <View style={{
+              width: 48,
+              height: 48,
+              borderRadius: 16,
+              backgroundColor: colors.glass,
+              borderWidth: 1,
+              borderColor: colors.glassBorder,
+              justifyContent: "center",
+              alignItems: "center",
+              overflow: "hidden",
+            }}>
+              <Image
+                source={require("../../assets/images/yield.jpeg")}
+                style={{ width: 48, height: 48, borderRadius: 16 }}
+                resizeMode="cover"
+              />
+            </View>
             <View style={styles.welcomeContainer}>
-              <Text style={[styles.welcomeText, { color: colors.textLight }]}>Welcome,</Text>
+              <Text style={[styles.welcomeText, { color: colors.textLight }]}>Welcome back 👋</Text>
               <Text style={[styles.usernameText, { color: colors.text }]}>
                 {user?.name || user?.email?.split("@")[0]}
               </Text>
@@ -68,8 +83,9 @@ export default function Page() {
             <TouchableOpacity
               style={[styles.addButton, { backgroundColor: colors.primary }]}
               onPress={() => router.push("/create")}
+              activeOpacity={0.85}
             >
-              <Ionicons name="add" size={20} color="#FFF" />
+              <Ionicons name="add" size={20} color="#0A0812" />
               <Text style={styles.addButtonText}>Add</Text>
             </TouchableOpacity>
           </View>
@@ -79,8 +95,19 @@ export default function Page() {
 
         <View style={styles.transactionsHeaderContainer}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Transactions</Text>
-          {summary.month && (
-            <Text style={{ fontSize: 12, color: colors.textLight }}>{summary.month}</Text>
+          {transactions?.length > 0 && (
+            <View style={{
+              backgroundColor: colors.glass,
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: colors.glassBorder,
+            }}>
+              <Text style={{ fontSize: 11, color: colors.primary, fontWeight: "600" }}>
+                {transactions.length} total
+              </Text>
+            </View>
           )}
         </View>
       </View>

@@ -16,7 +16,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
 import { useRouter } from "expo-router";
 import { THEMES } from "../../constants/colors";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 
 const CURRENCIES = [
   { code: "USD", symbol: "$", name: "US Dollar" },
@@ -36,15 +37,16 @@ const LANGUAGES = [
 ];
 
 const THEME_OPTIONS = [
-  { key: "coffee", label: "Coffee", color: "#8B593E" },
-  { key: "forest", label: "Forest", color: "#2E7D32" },
-  { key: "purple", label: "Purple", color: "#6A1B9A" },
-  { key: "ocean", label: "Ocean", color: "#0277BD" },
+  { key: "coffee", label: "Coffee", color: "#D4A574", gradient: ["#D4A574", "#B8845A"] },
+  { key: "forest", label: "Forest", color: "#4ADE80", gradient: ["#4ADE80", "#22C55E"] },
+  { key: "purple", label: "Purple", color: "#A78BFA", gradient: ["#A78BFA", "#8B5CF6"] },
+  { key: "ocean", label: "Ocean", color: "#38BDF8", gradient: ["#38BDF8", "#0EA5E9"] },
 ];
 
 export default function ProfileScreen() {
   const { user, logout, updateProfile, updatePassword } = useAuth();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const [selectedTheme, setSelectedTheme] = useState(user?.theme || "purple");
   const [selectedCurrency, setSelectedCurrency] = useState(
@@ -198,12 +200,35 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: colors.background }]}
-    >
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <View style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Header */}
-        <View style={[styles.header, { backgroundColor: colors.primary }]}>
+        <LinearGradient
+          colors={colors.gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.header, { paddingTop: insets.top + 30, paddingBottom: 36 }]}
+        >
+          {/* Decorative circles */}
+          <View style={{
+            position: "absolute",
+            top: -20,
+            right: -20,
+            width: 100,
+            height: 100,
+            borderRadius: 50,
+            backgroundColor: "rgba(255,255,255,0.08)",
+          }} />
+          <View style={{
+            position: "absolute",
+            bottom: -30,
+            left: -10,
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            backgroundColor: "rgba(255,255,255,0.05)",
+          }} />
+
           <View style={styles.avatarCircle}>
             <Text style={[styles.avatarText, { color: colors.primary }]}>
               {(user?.name || user?.email || "U")[0].toUpperCase()}
@@ -219,7 +244,7 @@ export default function ProfileScreen() {
               <Text style={styles.savingText}>Saving...</Text>
             </View>
           )}
-        </View>
+        </LinearGradient>
 
         <View style={styles.content}>
           <SectionHeader title="APPEARANCE" />
@@ -342,11 +367,11 @@ export default function ProfileScreen() {
           </View>
 
           <TouchableOpacity
-            style={[styles.logoutButton, { borderColor: "#E74C3C" }]}
+            style={[styles.logoutButton, { borderColor: "#FF6B6B" }]}
             onPress={handleLogout}
             activeOpacity={0.8}
           >
-            <Ionicons name="log-out-outline" size={20} color="#E74C3C" />
+            <Ionicons name="log-out-outline" size={20} color="#FF6B6B" />
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
 
@@ -359,7 +384,7 @@ export default function ProfileScreen() {
       {/* Currency Modal */}
       <Modal visible={currencyModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalSheet, { backgroundColor: colors.card }]}>
+          <View style={[styles.modalSheet, { backgroundColor: colors.cardSolid }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>
               Select Currency
             </Text>
@@ -370,7 +395,7 @@ export default function ProfileScreen() {
                 <TouchableOpacity
                   style={[
                     styles.modalItem,
-                    { borderBottomColor: colors.border },
+                    { borderBottomColor: colors.glassBorder },
                   ]}
                   onPress={() => handleCurrencyChange(item)}
                 >
@@ -400,7 +425,7 @@ export default function ProfileScreen() {
       {/* Language Modal */}
       <Modal visible={languageModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalSheet, { backgroundColor: colors.card }]}>
+          <View style={[styles.modalSheet, { backgroundColor: colors.cardSolid }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>
               Select Language
             </Text>
@@ -411,7 +436,7 @@ export default function ProfileScreen() {
                 <TouchableOpacity
                   style={[
                     styles.modalItem,
-                    { borderBottomColor: colors.border },
+                    { borderBottomColor: colors.glassBorder },
                   ]}
                   onPress={() => handleLanguageChange(item)}
                 >
@@ -441,7 +466,7 @@ export default function ProfileScreen() {
       {/* Edit Name Modal */}
       <Modal visible={editNameModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalSheet, { backgroundColor: colors.card }]}>
+          <View style={[styles.modalSheet, { backgroundColor: colors.cardSolid }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>
               Edit Name
             </Text>
@@ -449,9 +474,9 @@ export default function ProfileScreen() {
               style={[
                 styles.input,
                 {
-                  borderColor: colors.border,
+                  borderColor: colors.glassBorder,
                   color: colors.text,
-                  backgroundColor: colors.background,
+                  backgroundColor: colors.inputBg,
                 },
               ]}
               placeholder="Enter your name"
@@ -488,7 +513,7 @@ export default function ProfileScreen() {
       {/* Change Password Modal */}
       <Modal visible={passwordModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalSheet, { backgroundColor: colors.card }]}>
+          <View style={[styles.modalSheet, { backgroundColor: colors.cardSolid }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>
               Change Password
             </Text>
@@ -497,8 +522,8 @@ export default function ProfileScreen() {
               style={[
                 styles.inputWrapper,
                 {
-                  borderColor: colors.border,
-                  backgroundColor: colors.background,
+                  borderColor: colors.glassBorder,
+                  backgroundColor: colors.inputBg,
                 },
               ]}
             >
@@ -525,8 +550,8 @@ export default function ProfileScreen() {
               style={[
                 styles.inputWrapper,
                 {
-                  borderColor: colors.border,
-                  backgroundColor: colors.background,
+                  borderColor: colors.glassBorder,
+                  backgroundColor: colors.inputBg,
                 },
               ]}
             >
@@ -551,8 +576,8 @@ export default function ProfileScreen() {
               style={[
                 styles.inputWrapper,
                 {
-                  borderColor: colors.border,
-                  backgroundColor: colors.background,
+                  borderColor: colors.glassBorder,
+                  backgroundColor: colors.inputBg,
                 },
               ]}
             >
@@ -595,7 +620,7 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -603,132 +628,141 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   header: {
     alignItems: "center",
-    paddingVertical: 32,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
+    overflow: "hidden",
   },
   avatarCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: "#fff",
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: "rgba(255,255,255,0.95)",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 14,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  avatarText: { fontSize: 28, fontWeight: "700" },
-  userName: { fontSize: 20, fontWeight: "700", color: "#fff", marginBottom: 4 },
-  userEmail: { fontSize: 13, color: "rgba(255,255,255,0.75)" },
+  avatarText: { fontSize: 30, fontWeight: "800" },
+  userName: { fontSize: 22, fontWeight: "800", color: "#fff", marginBottom: 4, letterSpacing: 0.3 },
+  userEmail: { fontSize: 13, color: "rgba(255,255,255,0.75)", letterSpacing: 0.2 },
   savingBadge: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
     marginTop: 10,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    paddingHorizontal: 14,
+    paddingVertical: 5,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
   },
-  savingText: { color: "#fff", fontSize: 12 },
+  savingText: { color: "#fff", fontSize: 12, fontWeight: "500" },
   content: { padding: 16 },
   sectionHeader: {
     fontSize: 11,
     fontWeight: "700",
-    letterSpacing: 1.2,
-    marginTop: 20,
-    marginBottom: 8,
+    letterSpacing: 1.5,
+    marginTop: 22,
+    marginBottom: 10,
     marginLeft: 4,
   },
   card: {
-    borderRadius: 16,
+    borderRadius: 18,
     overflow: "hidden",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: "rgba(167,139,250,0.12)",
   },
   settingRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 14,
-    paddingVertical: 13,
+    paddingVertical: 14,
     borderBottomWidth: 1,
   },
   settingLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
   settingRight: { flexDirection: "row", alignItems: "center", gap: 6 },
   iconBox: {
-    width: 34,
-    height: 34,
-    borderRadius: 9,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
   },
-  settingLabel: { fontSize: 15, fontWeight: "500" },
-  settingValue: { fontSize: 14 },
+  settingLabel: { fontSize: 15, fontWeight: "600", letterSpacing: 0.2 },
+  settingValue: { fontSize: 14, letterSpacing: 0.2 },
   themeRow: {
     flexDirection: "row",
     justifyContent: "space-around",
     paddingHorizontal: 14,
-    paddingBottom: 16,
+    paddingBottom: 18,
   },
   themeOption: { alignItems: "center", gap: 6 },
   themeCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   themeCircleSelected: {
     borderWidth: 3,
-    borderColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
+    borderColor: "rgba(255,255,255,0.9)",
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  themeLabel: { fontSize: 11, fontWeight: "500" },
+  themeLabel: { fontSize: 11, fontWeight: "600" },
   logoutButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
     marginTop: 24,
-    paddingVertical: 14,
-    borderRadius: 14,
+    paddingVertical: 15,
+    borderRadius: 16,
     borderWidth: 1.5,
+    backgroundColor: "rgba(231,76,60,0.08)",
   },
-  logoutText: { color: "#E74C3C", fontSize: 15, fontWeight: "600" },
+  logoutText: { color: "#FF6B6B", fontSize: 15, fontWeight: "700" },
   version: {
     textAlign: "center",
     fontSize: 12,
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: 18,
+    marginBottom: 10,
+    letterSpacing: 0.3,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.6)",
     justifyContent: "flex-end",
   },
   modalSheet: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 22,
     maxHeight: "70%",
+    borderWidth: 1,
+    borderColor: "rgba(167,139,250,0.12)",
+    borderBottomWidth: 0,
   },
   modalTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: "700",
     marginBottom: 16,
     textAlign: "center",
+    letterSpacing: 0.3,
   },
   modalItem: {
     flexDirection: "row",
@@ -737,21 +771,25 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomWidth: 1,
   },
-  modalItemText: { fontSize: 15 },
+  modalItemText: { fontSize: 15, fontWeight: "500" },
   modalClose: {
     marginTop: 16,
-    paddingVertical: 13,
-    borderRadius: 12,
+    paddingVertical: 14,
+    borderRadius: 14,
     alignItems: "center",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  modalCloseText: { color: "#fff", fontWeight: "600", fontSize: 15 },
+  modalCloseText: { color: "#0A0812", fontWeight: "700", fontSize: 15, letterSpacing: 0.3 },
   modalCancel: { marginTop: 10, alignItems: "center", paddingVertical: 8 },
   modalCancelText: { fontSize: 14 },
   input: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 14,
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 13,
     fontSize: 15,
     marginBottom: 8,
   },
@@ -759,9 +797,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 14,
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 13,
     marginBottom: 10,
   },
   inputInner: { flex: 1, fontSize: 15 },

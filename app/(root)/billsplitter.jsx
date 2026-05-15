@@ -8,10 +8,11 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { THEMES } from "../../constants/colors";
 import { useAuth } from "../../contexts/AuthContext";
+import { LinearGradient } from "expo-linear-gradient";
 
 const CURRENCY_SYMBOLS = {
   USD: "$", INR: "₹", EUR: "€", GBP: "£",
@@ -25,6 +26,7 @@ export default function BillSplitterScreen() {
   const { user } = useAuth();
   const colors = THEMES[user?.theme || "purple"];
   const symbol = CURRENCY_SYMBOLS[user?.currency || "USD"] || "$";
+  const insets = useSafeAreaInsets();
 
   const [billAmount, setBillAmount] = useState("");
   const [tipPct, setTipPct] = useState("0");
@@ -116,22 +118,27 @@ export default function BillSplitterScreen() {
   const TIP_OPTIONS = ["0", "5", "10", "15", "20"];
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <View style={[styles.safeArea, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+      <LinearGradient
+        colors={colors.gradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.header, { paddingTop: insets.top + 20, paddingBottom: 24 }]}
+      >
         <Text style={styles.headerTitle}>Bill Splitter</Text>
         <Text style={styles.headerSubtitle}>Split bills with friends easily</Text>
-      </View>
+      </LinearGradient>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         <View style={styles.content}>
 
           {/* Bill Amount */}
-          <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.shadow }]}>
+          <View style={[styles.card, { backgroundColor: colors.cardSolid, borderWidth: 1, borderColor: colors.glassBorder }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Bill Details</Text>
 
             <Text style={[styles.inputLabel, { color: colors.textLight }]}>Total Bill Amount</Text>
-            <View style={[styles.inputRow, { borderColor: colors.border, backgroundColor: colors.background }]}>
+            <View style={[styles.inputRow, { borderColor: colors.glassBorder, backgroundColor: colors.inputBg }]}>
               <Text style={[styles.inputPrefix, { color: colors.primary }]}>{symbol}</Text>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
@@ -151,18 +158,18 @@ export default function BillSplitterScreen() {
                   key={t}
                   style={[
                     styles.tipBtn,
-                    { borderColor: colors.border },
+                    { borderColor: colors.glassBorder },
                     tipPct === t && { backgroundColor: colors.primary, borderColor: colors.primary },
                   ]}
                   onPress={() => { setTipPct(t); setResult(null); }}
                 >
-                  <Text style={[styles.tipBtnText, { color: tipPct === t ? "#fff" : colors.text }]}>
+                  <Text style={[styles.tipBtnText, { color: tipPct === t ? "#0A0812" : colors.text }]}>
                     {t}%
                   </Text>
                 </TouchableOpacity>
               ))}
               {/* Custom tip */}
-              <View style={[styles.inputRow, { borderColor: colors.border, backgroundColor: colors.background, flex: 1, marginBottom: 0 }]}>
+              <View style={[styles.inputRow, { borderColor: colors.glassBorder, backgroundColor: colors.inputBg, flex: 1, marginBottom: 0 }]}>
                 <TextInput
                   style={[styles.input, { color: colors.text, fontSize: 13 }]}
                   placeholder="Custom"
@@ -186,28 +193,28 @@ export default function BillSplitterScreen() {
           </View>
 
           {/* Split Mode */}
-          <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.shadow }]}>
+          <View style={[styles.card, { backgroundColor: colors.cardSolid, borderWidth: 1, borderColor: colors.glassBorder }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Split Method</Text>
-            <View style={[styles.modeToggle, { backgroundColor: colors.background, borderColor: colors.border }]}>
+            <View style={[styles.modeToggle, { backgroundColor: colors.inputBg, borderColor: colors.glassBorder }]}>
               <TouchableOpacity
                 style={[styles.modeBtn, splitMode === "equal" && { backgroundColor: colors.primary }]}
                 onPress={() => { setSplitMode("equal"); setResult(null); }}
               >
-                <Ionicons name="people-outline" size={16} color={splitMode === "equal" ? "#fff" : colors.textLight} />
-                <Text style={[styles.modeBtnText, { color: splitMode === "equal" ? "#fff" : colors.textLight }]}>Equal Split</Text>
+                <Ionicons name="people-outline" size={16} color={splitMode === "equal" ? "#0A0812" : colors.textLight} />
+                <Text style={[styles.modeBtnText, { color: splitMode === "equal" ? "#0A0812" : colors.textLight }]}>Equal Split</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modeBtn, splitMode === "custom" && { backgroundColor: colors.primary }]}
                 onPress={() => { setSplitMode("custom"); setResult(null); }}
               >
-                <Ionicons name="options-outline" size={16} color={splitMode === "custom" ? "#fff" : colors.textLight} />
-                <Text style={[styles.modeBtnText, { color: splitMode === "custom" ? "#fff" : colors.textLight }]}>Custom Split</Text>
+                <Ionicons name="options-outline" size={16} color={splitMode === "custom" ? "#0A0812" : colors.textLight} />
+                <Text style={[styles.modeBtnText, { color: splitMode === "custom" ? "#0A0812" : colors.textLight }]}>Custom Split</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* People */}
-          <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.shadow }]}>
+          <View style={[styles.card, { backgroundColor: colors.cardSolid, borderWidth: 1, borderColor: colors.glassBorder }]}>
             <View style={styles.peopleTitleRow}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>People ({people.length})</Text>
               <TouchableOpacity
@@ -228,12 +235,12 @@ export default function BillSplitterScreen() {
                     key={p.id}
                     style={[
                       styles.paidByBtn,
-                      { borderColor: colors.border },
+                      { borderColor: colors.glassBorder },
                       paidBy === p.id && { backgroundColor: colors.primary, borderColor: colors.primary },
                     ]}
                     onPress={() => setPaidBy(p.id)}
                   >
-                    <Text style={[styles.paidByText, { color: paidBy === p.id ? "#fff" : colors.text }]}>
+                    <Text style={[styles.paidByText, { color: paidBy === p.id ? "#0A0812" : colors.text }]}>
                       {p.name}
                     </Text>
                   </TouchableOpacity>
@@ -242,21 +249,21 @@ export default function BillSplitterScreen() {
             </ScrollView>
 
             {people.map((person, index) => (
-              <View key={person.id} style={[styles.personRow, { borderBottomColor: colors.border }]}>
+              <View key={person.id} style={[styles.personRow, { borderBottomColor: colors.glassBorder }]}>
                 <View style={[styles.personAvatar, { backgroundColor: colors.primary + "20" }]}>
                   <Text style={[styles.personAvatarText, { color: colors.primary }]}>
                     {person.name[0]?.toUpperCase()}
                   </Text>
                 </View>
                 <TextInput
-                  style={[styles.personNameInput, { color: colors.text, borderBottomColor: colors.border }]}
+                  style={[styles.personNameInput, { color: colors.text, borderBottomColor: colors.glassBorder }]}
                   value={person.name}
                   onChangeText={(v) => updateName(person.id, v)}
                   placeholder="Name"
                   placeholderTextColor={colors.textLight}
                 />
                 {splitMode === "custom" && (
-                  <View style={[styles.customAmountBox, { borderColor: colors.border, backgroundColor: colors.background }]}>
+                  <View style={[styles.customAmountBox, { borderColor: colors.glassBorder, backgroundColor: colors.inputBg }]}>
                     <Text style={[styles.customAmountSymbol, { color: colors.textLight }]}>{symbol}</Text>
                     <TextInput
                       style={[styles.customAmountInput, { color: colors.text }]}
@@ -281,13 +288,13 @@ export default function BillSplitterScreen() {
             onPress={calculate}
             activeOpacity={0.85}
           >
-            <Ionicons name="calculator-outline" size={18} color="#fff" />
-            <Text style={styles.calcBtnText}>Calculate Split</Text>
+            <Ionicons name="calculator-outline" size={18} color="#0A0812" />
+            <Text style={[styles.calcBtnText, { color: "#0A0812" }]}>Calculate Split</Text>
           </TouchableOpacity>
 
           {/* Result */}
           {result && (
-            <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.shadow }]}>
+            <View style={[styles.card, { backgroundColor: colors.cardSolid, borderWidth: 1, borderColor: colors.glassBorder }]}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>Split Summary</Text>
 
               {/* Total */}
@@ -301,7 +308,7 @@ export default function BillSplitterScreen() {
               {/* Each person's share */}
               <Text style={[styles.inputLabel, { color: colors.textLight, marginTop: 12 }]}>Each Person Owes</Text>
               {people.map((p) => (
-                <View key={p.id} style={[styles.shareRow, { borderBottomColor: colors.border }]}>
+                <View key={p.id} style={[styles.shareRow, { borderBottomColor: colors.glassBorder }]}>
                   <View style={[styles.personAvatar, { backgroundColor: colors.primary + "20" }]}>
                     <Text style={[styles.personAvatarText, { color: colors.primary }]}>
                       {p.name[0]?.toUpperCase()}
@@ -322,7 +329,7 @@ export default function BillSplitterScreen() {
               {/* Settlements */}
               <Text style={[styles.inputLabel, { color: colors.textLight, marginTop: 14 }]}>Settlements</Text>
               {result.settlements.map((s, i) => (
-                <View key={i} style={[styles.settlementRow, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                <View key={i} style={[styles.settlementRow, { backgroundColor: colors.inputBg, borderColor: colors.glassBorder }]}>
                   <Text style={[styles.settlementName, { color: colors.text }]}>{s.from}</Text>
                   <View style={styles.settlementArrow}>
                     <Ionicons name="arrow-forward" size={14} color={colors.textLight} />
@@ -337,7 +344,7 @@ export default function BillSplitterScreen() {
 
               {/* Reset */}
               <TouchableOpacity
-                style={[styles.resetBtn, { borderColor: colors.border }]}
+                style={[styles.resetBtn, { borderColor: colors.glassBorder }]}
                 onPress={reset}
               >
                 <Ionicons name="refresh-outline" size={16} color={colors.textLight} />
@@ -347,13 +354,13 @@ export default function BillSplitterScreen() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
-  header: { paddingVertical: 24, paddingHorizontal: 20, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
+  header: { paddingHorizontal: 20, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
   headerTitle: { fontSize: 22, fontWeight: "700", color: "#fff" },
   headerSubtitle: { fontSize: 13, color: "rgba(255,255,255,0.75)", marginTop: 2 },
   content: { padding: 16 },

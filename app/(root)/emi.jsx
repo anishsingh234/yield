@@ -8,10 +8,11 @@ import {
   ScrollView,
   FlatList,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { THEMES } from "../../constants/colors";
 import { useAuth } from "../../contexts/AuthContext";
+import { LinearGradient } from "expo-linear-gradient";
 
 const CURRENCY_SYMBOLS = {
   USD: "$", INR: "₹", EUR: "€", GBP: "£",
@@ -30,6 +31,7 @@ export default function EMIScreen() {
   const { user } = useAuth();
   const colors = THEMES[user?.theme || "purple"];
   const symbol = CURRENCY_SYMBOLS[user?.currency || "USD"] || "$";
+  const insets = useSafeAreaInsets();
 
   const [principal, setPrincipal] = useState("");
   const [rate, setRate] = useState("");
@@ -94,14 +96,19 @@ export default function EMIScreen() {
     : 0;
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <View style={[styles.safeArea, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+      <LinearGradient
+        colors={colors.gradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.header, { paddingTop: insets.top + 20, paddingBottom: 24 }]}
+      >
         <Text style={styles.headerTitle}>EMI Calculator</Text>
         <Text style={styles.headerSubtitle}>Plan your loan repayments</Text>
-      </View>
+      </LinearGradient>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         <View style={styles.content}>
 
           {/* Presets */}
@@ -111,7 +118,7 @@ export default function EMIScreen() {
               {LOAN_PRESETS.map((preset) => (
                 <TouchableOpacity
                   key={preset.label}
-                  style={[styles.presetBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  style={[styles.presetBtn, { backgroundColor: colors.glass, borderColor: colors.glassBorder }]}
                   onPress={() => applyPreset(preset)}
                   activeOpacity={0.8}
                 >
@@ -124,11 +131,11 @@ export default function EMIScreen() {
           </ScrollView>
 
           {/* Input Card */}
-          <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.shadow }]}>
+          <View style={[styles.card, { backgroundColor: colors.cardSolid, borderWidth: 1, borderColor: colors.glassBorder }]}>
 
             {/* Loan Amount */}
             <Text style={[styles.inputLabel, { color: colors.textLight }]}>Loan Amount</Text>
-            <View style={[styles.inputRow, { borderColor: colors.border, backgroundColor: colors.background }]}>
+            <View style={[styles.inputRow, { borderColor: colors.glassBorder, backgroundColor: colors.inputBg }]}>
               <Text style={[styles.inputPrefix, { color: colors.primary }]}>{symbol}</Text>
               <TextInput
                 style={[styles.input, { color: colors.text }]}
@@ -142,7 +149,7 @@ export default function EMIScreen() {
 
             {/* Interest Rate */}
             <Text style={[styles.inputLabel, { color: colors.textLight }]}>Annual Interest Rate</Text>
-            <View style={[styles.inputRow, { borderColor: colors.border, backgroundColor: colors.background }]}>
+            <View style={[styles.inputRow, { borderColor: colors.glassBorder, backgroundColor: colors.inputBg }]}>
               <TextInput
                 style={[styles.input, { color: colors.text, flex: 1 }]}
                 placeholder="e.g. 8.5"
@@ -157,7 +164,7 @@ export default function EMIScreen() {
             {/* Tenure */}
             <Text style={[styles.inputLabel, { color: colors.textLight }]}>Loan Tenure</Text>
             <View style={styles.tenureRow}>
-              <View style={[styles.inputRow, { borderColor: colors.border, backgroundColor: colors.background, flex: 1 }]}>
+              <View style={[styles.inputRow, { borderColor: colors.glassBorder, backgroundColor: colors.inputBg, flex: 1 }]}>
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
                   placeholder="e.g. 24"
@@ -167,18 +174,18 @@ export default function EMIScreen() {
                   keyboardType="decimal-pad"
                 />
               </View>
-              <View style={[styles.tenureToggle, { backgroundColor: colors.background, borderColor: colors.border }]}>
+              <View style={[styles.tenureToggle, { backgroundColor: colors.inputBg, borderColor: colors.glassBorder }]}>
                 <TouchableOpacity
                   style={[styles.toggleBtn, tenureType === "months" && { backgroundColor: colors.primary }]}
                   onPress={() => setTenureType("months")}
                 >
-                  <Text style={[styles.toggleText, { color: tenureType === "months" ? "#fff" : colors.textLight }]}>Mo</Text>
+                  <Text style={[styles.toggleText, { color: tenureType === "months" ? "#0A0812" : colors.textLight }]}>Mo</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.toggleBtn, tenureType === "years" && { backgroundColor: colors.primary }]}
                   onPress={() => setTenureType("years")}
                 >
-                  <Text style={[styles.toggleText, { color: tenureType === "years" ? "#fff" : colors.textLight }]}>Yr</Text>
+                  <Text style={[styles.toggleText, { color: tenureType === "years" ? "#0A0812" : colors.textLight }]}>Yr</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -189,8 +196,8 @@ export default function EMIScreen() {
               onPress={calculate}
               activeOpacity={0.85}
             >
-              <Ionicons name="calculator-outline" size={18} color="#fff" />
-              <Text style={styles.calcBtnText}>Calculate EMI</Text>
+              <Ionicons name="calculator-outline" size={18} color="#0A0812" />
+              <Text style={[styles.calcBtnText, { color: "#0A0812" }]}>Calculate EMI</Text>
             </TouchableOpacity>
           </View>
 
@@ -199,7 +206,7 @@ export default function EMIScreen() {
             <>
               <View style={[styles.card, { backgroundColor: colors.primary }]}>
                 <Text style={styles.emiLabel}>Monthly EMI</Text>
-                <Text style={styles.emiValue}>
+                <Text style={[styles.emiValue, { color: "#0A0812" }]}>
                   {symbol}{fmt(result.emi)}
                 </Text>
                 <Text style={styles.emiSubtitle}>
@@ -208,7 +215,7 @@ export default function EMIScreen() {
               </View>
 
               {/* Breakdown */}
-              <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.shadow }]}>
+              <View style={[styles.card, { backgroundColor: colors.cardSolid, borderWidth: 1, borderColor: colors.glassBorder }]}>
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>Breakdown</Text>
 
                 <View style={styles.breakdownRow}>
@@ -219,7 +226,7 @@ export default function EMIScreen() {
                     </Text>
                     <Text style={[styles.breakdownPct, { color: colors.textLight }]}>{principalPct}%</Text>
                   </View>
-                  <View style={[styles.vDivider, { backgroundColor: colors.border }]} />
+                  <View style={[styles.vDivider, { backgroundColor: colors.glassBorder }]} />
                   <View style={styles.breakdownItem}>
                     <Text style={[styles.breakdownLabel, { color: colors.textLight }]}>Total Interest</Text>
                     <Text style={[styles.breakdownValue, { color: colors.expense }]}>
@@ -227,7 +234,7 @@ export default function EMIScreen() {
                     </Text>
                     <Text style={[styles.breakdownPct, { color: colors.textLight }]}>{interestPct}%</Text>
                   </View>
-                  <View style={[styles.vDivider, { backgroundColor: colors.border }]} />
+                  <View style={[styles.vDivider, { backgroundColor: colors.glassBorder }]} />
                   <View style={styles.breakdownItem}>
                     <Text style={[styles.breakdownLabel, { color: colors.textLight }]}>Total Payment</Text>
                     <Text style={[styles.breakdownValue, { color: colors.primary }]}>
@@ -238,7 +245,7 @@ export default function EMIScreen() {
                 </View>
 
                 {/* Visual bar */}
-                <View style={[styles.barTrack, { backgroundColor: colors.border }]}>
+                <View style={[styles.barTrack, { backgroundColor: colors.glassBorder }]}>
                   <View style={[styles.barFill, { width: `${principalPct}%`, backgroundColor: colors.income }]} />
                   <View style={[styles.barFill, { width: `${interestPct}%`, backgroundColor: colors.expense }]} />
                 </View>
@@ -256,7 +263,7 @@ export default function EMIScreen() {
 
               {/* Amortization Schedule */}
               <TouchableOpacity
-                style={[styles.scheduleToggle, { backgroundColor: colors.card, borderColor: colors.border }]}
+                style={[styles.scheduleToggle, { backgroundColor: colors.cardSolid, borderColor: colors.glassBorder }]}
                 onPress={() => setShowSchedule(!showSchedule)}
               >
                 <Text style={[styles.scheduleToggleText, { color: colors.text }]}>
@@ -266,7 +273,7 @@ export default function EMIScreen() {
               </TouchableOpacity>
 
               {showSchedule && (
-                <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.shadow, padding: 0, overflow: "hidden" }]}>
+                <View style={[styles.card, { backgroundColor: colors.cardSolid, borderWidth: 1, borderColor: colors.glassBorder, padding: 0, overflow: "hidden" }]}>
                   {/* Table Header */}
                   <View style={[styles.tableHeader, { backgroundColor: colors.primary + "18" }]}>
                     {["Mo", "EMI", "Principal", "Interest", "Balance"].map((h) => (
@@ -276,7 +283,7 @@ export default function EMIScreen() {
                   {result.schedule.slice(0, showSchedule ? result.schedule.length : 3).map((row, i) => (
                     <View
                       key={row.month}
-                      style={[styles.tableRow, { borderBottomColor: colors.border, backgroundColor: i % 2 === 0 ? colors.background : colors.card }]}
+                      style={[styles.tableRow, { borderBottomColor: colors.glassBorder, backgroundColor: i % 2 === 0 ? colors.background : colors.cardSolid }]}
                     >
                       <Text style={[styles.tableCell, { color: colors.textLight }]}>{row.month}</Text>
                       <Text style={[styles.tableCell, { color: colors.text }]}>{symbol}{fmt(row.emi)}</Text>
@@ -291,13 +298,13 @@ export default function EMIScreen() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
-  header: { paddingVertical: 24, paddingHorizontal: 20, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
+  header: { paddingHorizontal: 20, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
   headerTitle: { fontSize: 22, fontWeight: "700", color: "#fff" },
   headerSubtitle: { fontSize: 13, color: "rgba(255,255,255,0.75)", marginTop: 2 },
   content: { padding: 16 },

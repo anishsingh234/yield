@@ -1,6 +1,6 @@
 import { Stack, useRouter, useSegments } from 'expo-router'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import SafeScreen from '../components/SafeScreen'
+import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 import { COLORS } from '../constants/colors'
@@ -43,9 +43,8 @@ export default function RootLayout() {
   return(
     <AuthProvider>
       <SafeAreaProvider>
-        <SafeScreen>
-          <InitialLayout />
-        </SafeScreen>
+        <StatusBar style="light" translucent backgroundColor="transparent" />
+        <InitialLayout />
       </SafeAreaProvider>
     </AuthProvider>
   )
