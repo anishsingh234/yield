@@ -3,7 +3,6 @@ import * as SecureStore from "expo-secure-store";
 import { API_URL } from "../constants/api";
 
 const AuthContext = createContext(null);
-
 const TOKEN_KEY = "auth_token";
 
 export function AuthProvider({ children }) {
@@ -11,7 +10,6 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // On app start, check for stored token and validate it
   useEffect(() => {
     loadStoredAuth();
   }, []);
@@ -20,19 +18,14 @@ export function AuthProvider({ children }) {
     try {
       const storedToken = await SecureStore.getItemAsync(TOKEN_KEY);
       if (storedToken) {
-        // Validate token by fetching profile
         const response = await fetch(`${API_URL}/auth/profile`, {
-          headers: {
-            Authorization: `Bearer ${storedToken}`,
-          },
+          headers: { Authorization: `Bearer ${storedToken}` },
         });
-
         if (response.ok) {
           const userData = await response.json();
           setToken(storedToken);
-          setUser(userData);
+          setUser(userData); // now includes currency, theme, language
         } else {
-          // Token is invalid/expired, clear it
           await SecureStore.deleteItemAsync(TOKEN_KEY);
         }
       }
@@ -47,44 +40,28 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
-
     const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Login failed");
-    }
-
+    if (!response.ok) throw new Error(data.error || "Login failed");
     await SecureStore.setItemAsync(TOKEN_KEY, data.token);
     setToken(data.token);
-    setUser(data.user);
-
+    setUser(data.user); // includes currency, theme, language
     return data;
   };
 
   const register = async (email, password, name) => {
     const response = await fetch(`${API_URL}/auth/register`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password, name }),
     });
-
     const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Registration failed");
-    }
-
+    if (!response.ok) throw new Error(data.error || "Registration failed");
     await SecureStore.setItemAsync(TOKEN_KEY, data.token);
     setToken(data.token);
     setUser(data.user);
-
     return data;
   };
 
@@ -92,6 +69,37 @@ export function AuthProvider({ children }) {
     await SecureStore.deleteItemAsync(TOKEN_KEY);
     setToken(null);
     setUser(null);
+  };
+
+  // ✅ Update name, currency, theme, language
+  const updateProfile = async (updates) => {
+    const response = await fetch(`${API_URL}/auth/profile`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updates),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Update failed");
+    setUser(data); // update user in context with new values
+    return data;
+  };
+
+  // ✅ Update password
+  const updatePassword = async (currentPassword, newPassword) => {
+    const response = await fetch(`${API_URL}/auth/password`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Password update failed");
+    return data;
   };
 
   const value = {
@@ -102,6 +110,8 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    updateProfile,
+    updatePassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -109,8 +119,6 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 }

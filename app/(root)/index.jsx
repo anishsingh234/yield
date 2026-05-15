@@ -8,6 +8,7 @@ import { useFocusEffect } from "expo-router";
 import PageLoader from "@/components/PageLoader";
 import { styles } from "../../assets/styles/home.styles";
 import { Ionicons } from "@expo/vector-icons";
+import { COLORS } from "../../constants/colors";
 import { BalanceCard } from "../../components/BalanceCard";
 import { TransactionItem } from "../../components/TransactionItem";
 import NoTransactionsFound from "../../components/NoTransactionsFound";
@@ -53,7 +54,7 @@ export default function Page() {
           {/* LEFT */}
           <View style={styles.headerLeft}>
             <Image
-              source={require("../../assets/images/logo.png")}
+              source={require("../../assets/images/yield.jpeg")}
               style={styles.headerLogo}
               resizeMode="contain"
             />
@@ -70,6 +71,9 @@ export default function Page() {
               <Ionicons name="add" size={20} color="#FFF" />
               <Text style={styles.addButtonText}>Add</Text>
             </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push("/profile")}>
+  <Ionicons name="person-circle-outline" size={28} color={COLORS.primary} />
+</TouchableOpacity>
             <SignOutButton />
           </View>
         </View>
