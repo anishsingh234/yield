@@ -60,34 +60,33 @@ export default function Layout() {
           )
         }}
       />
-       <Tabs.Screen
-        name="converter"
+      <Tabs.Screen
+        name="wallets"
         options={{
-          title: 'Converter',
+          title: 'Wallets',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "swap-horizontal" : "swap-horizontal-outline"} size={focused ? 26 : 24} color={color} />
+            <Ionicons name={focused ? "wallet" : "wallet-outline"} size={focused ? 24 : 22} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="emi"
+        name="friends"
         options={{
-          title: 'EMI',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "calculator" : "calculator-outline"} size={focused ? 24 : 22} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="billsplitter"
-        options={{
-          title: 'Splitter',
-          tabBarIcon: ({ color, size, focused }) => (
+          title: 'Friends',
+          tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "people" : "people-outline"} size={focused ? 24 : 22} color={color} />
           ),
         }}
       />
-     
+      <Tabs.Screen
+        name="insights"
+        options={{
+          title: 'Insights',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? "bar-chart" : "bar-chart-outline"} size={focused ? 24 : 22} color={color} />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="profile"
         options={{

@@ -21,6 +21,7 @@ import NoTransactionsFound from "../../components/NoTransactionsFound";
 import { TransactionItem } from "../../components/TransactionItem";
 import { THEMES } from "../../constants/colors";
 import { useAuth } from "../../contexts/AuthContext";
+import { useWallet } from "../../contexts/WalletContext";
 
 export default function Page() {
   const { user, token } = useAuth();
@@ -28,9 +29,12 @@ export default function Page() {
   const colors = THEMES[user?.theme || "purple"];
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
+  const symbol = "₹";
 
   const { transactions, summary, isLoading, loadData, deleteTransaction } =
     useTransactions(user?.id, token);
+
+  const { config, computeWalletStats, templates } = useWallet();
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -58,6 +62,9 @@ export default function Page() {
       ],
     );
   };
+
+  const stats = computeWalletStats(transactions);
+  const fmt = (val) => parseFloat(val || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
 
   if (isLoading && !refreshing) return <PageLoader />;
 
@@ -109,7 +116,141 @@ export default function Page() {
           </View>
         </View>
 
-        <BalanceCard summary={summary} userCurrency={user?.currency || "USD"} />
+        <BalanceCard summary={summary} />
+
+        {/* DAILY BUDGET CARD */}
+        {config.isSetup && (
+          <View style={{
+            flexDirection: "row",
+            gap: 10,
+            marginTop: 14,
+            marginBottom: 6,
+          }}>
+            <View style={{
+              flex: 1,
+              backgroundColor: colors.cardSolid,
+              borderRadius: 14,
+              padding: 14,
+              borderWidth: 1,
+              borderColor: colors.glassBorder,
+              alignItems: "center",
+            }}>
+              <Text style={{ color: colors.textLight, fontSize: 11, fontWeight: "600", marginBottom: 4 }}>
+                Today Left
+              </Text>
+              <Text style={{
+                color: stats.daily.todayRemaining > 0 ? "#6BCB77" : "#FF6B6B",
+                fontSize: 20,
+                fontWeight: "800",
+              }}>
+                {symbol}{fmt(stats.daily.todayRemaining)}
+              </Text>
+            </View>
+            <View style={{
+              flex: 1,
+              backgroundColor: colors.cardSolid,
+              borderRadius: 14,
+              padding: 14,
+              borderWidth: 1,
+              borderColor: colors.glassBorder,
+              alignItems: "center",
+            }}>
+              <Text style={{ color: colors.textLight, fontSize: 11, fontWeight: "600", marginBottom: 4 }}>
+                Month Left
+              </Text>
+              <Text style={{
+                color: stats.daily.remaining > 0 ? colors.primary : "#FF6B6B",
+                fontSize: 20,
+                fontWeight: "800",
+              }}>
+                {symbol}{fmt(stats.daily.remaining)}
+              </Text>
+            </View>
+            <View style={{
+              flex: 1,
+              backgroundColor: colors.cardSolid,
+              borderRadius: 14,
+              padding: 14,
+              borderWidth: 1,
+              borderColor: colors.glassBorder,
+              alignItems: "center",
+            }}>
+              <Text style={{ color: colors.textLight, fontSize: 11, fontWeight: "600", marginBottom: 4 }}>
+                {stats.daysRemaining} days left
+              </Text>
+              <Text style={{
+                color: colors.text,
+                fontSize: 20,
+                fontWeight: "800",
+              }}>
+                {symbol}{fmt(stats.daily.todayBudget)}
+              </Text>
+              <Text style={{ color: colors.textLight, fontSize: 9, marginTop: 2 }}>/day</Text>
+            </View>
+          </View>
+        )}
+
+        {/* QUICK ADD TEMPLATES */}
+        {config.isSetup && templates && templates.length > 0 && (
+          <View style={{ marginTop: 8, marginBottom: 6 }}>
+            <FlatList
+              data={templates}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ gap: 8 }}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 6,
+                    backgroundColor: colors.glass,
+                    borderWidth: 1,
+                    borderColor: colors.glassBorder,
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                    borderRadius: 20,
+                  }}
+                  onPress={() => router.push({
+                    pathname: "/create",
+                    params: { template: JSON.stringify(item) },
+                  })}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name={item.icon} size={14} color={colors.primary} />
+                  <Text style={{ color: colors.text, fontSize: 12, fontWeight: "600" }}>
+                    {item.name}
+                  </Text>
+                  <Text style={{ color: colors.textLight, fontSize: 11 }}>
+                    {symbol}{item.amount}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        )}
+
+        {/* UPCOMING COMMITMENTS WARNING */}
+        {stats.upcomingCommitments && stats.upcomingCommitments.length > 0 && (
+          <View style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+            backgroundColor: "#FFB34712",
+            borderWidth: 1,
+            borderColor: "#FFB34725",
+            borderRadius: 12,
+            padding: 10,
+            marginTop: 6,
+            marginBottom: 6,
+          }}>
+            <Ionicons name="calendar-outline" size={16} color="#FFB347" />
+            <Text style={{ color: "#FFB347", fontSize: 12, fontWeight: "600", flex: 1 }}>
+              {stats.upcomingCommitments.length} upcoming: {stats.upcomingCommitments.map(c => c.name).join(", ")}
+            </Text>
+          </View>
+        )}
 
         <View style={styles.transactionsHeaderContainer}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -148,7 +289,7 @@ export default function Page() {
           <TransactionItem
             item={item}
             onDelete={handleDelete}
-            userCurrency={user?.currency || "USD"}
+           
           />
         )}
         ListEmptyComponent={<NoTransactionsFound />}

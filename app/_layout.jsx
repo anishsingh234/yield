@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 import { COLORS } from '../constants/colors'
 import { AuthProvider, useAuth } from '../contexts/AuthContext'
+import { WalletProvider } from '../contexts/WalletContext'
 
 function InitialLayout() {
   const { isSignedIn, isLoading } = useAuth()
@@ -42,10 +43,13 @@ function InitialLayout() {
 export default function RootLayout() {
   return(
     <AuthProvider>
-      <SafeAreaProvider>
-        <StatusBar style="light" translucent backgroundColor="transparent" />
-        <InitialLayout />
-      </SafeAreaProvider>
+      <WalletProvider>
+        <SafeAreaProvider>
+          <StatusBar style="light" translucent backgroundColor="transparent" />
+          <InitialLayout />
+        </SafeAreaProvider>
+      </WalletProvider>
     </AuthProvider>
   )
 }
+

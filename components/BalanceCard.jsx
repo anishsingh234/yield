@@ -1,11 +1,11 @@
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { styles } from "../assets/styles/home.styles";
 import { THEMES } from "../constants/colors";
 import { useAuth } from "../contexts/AuthContext";
 
 export const BalanceCard = ({ summary }) => {
-  const { user, formatCurrency, currencySymbol, ratesLoading } = useAuth();
+  const { user, formatCurrency } = useAuth();
   const colors = THEMES[user?.theme || "purple"];
 
   return (
@@ -35,7 +35,7 @@ export const BalanceCard = ({ summary }) => {
         backgroundColor: "rgba(255,255,255,0.05)",
       }} />
 
-      {/* Month label + rates loading */}
+      {/* Month label */}
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
         {summary.month ? (
           <View style={{
@@ -49,12 +49,6 @@ export const BalanceCard = ({ summary }) => {
             </Text>
           </View>
         ) : <View />}
-        {ratesLoading && (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-            <ActivityIndicator size="small" color="rgba(255,255,255,0.7)" />
-            <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: 10 }}>Updating rates...</Text>
-          </View>
-        )}
       </View>
 
       <Text style={styles.balanceTitle}>Total Balance</Text>
@@ -127,21 +121,13 @@ export const BalanceCard = ({ summary }) => {
         </View>
       </View>
 
-      {/* Currency badge */}
-      <View style={{
-        alignSelf: "center",
-        marginTop: 14,
-        backgroundColor: "rgba(255,255,255,0.12)",
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.08)",
-      }}>
-        <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 11, fontWeight: "600", letterSpacing: 0.3 }}>
-          💰 Showing in {user?.currency || "USD"} ({currencySymbol})
+      {/* Per-wallet balances + friend dues */}
+      {summary.wallets && (
+        <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 11, fontWeight: "600", textAlign: "center", marginTop: 14 }}>
+          Daily {formatCurrency(summary.wallets.daily)} · Savings {formatCurrency(summary.wallets.savings)} · Fixed {formatCurrency(summary.wallets.fixed)}
+          {"\n"}To get {formatCurrency(summary.toReceive)} · To pay {formatCurrency(summary.toPay)}
         </Text>
-      </View>
+      )}
     </LinearGradient>
   );
 };

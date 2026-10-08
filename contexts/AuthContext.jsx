@@ -1,53 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import * as SecureStore from "expo-secure-store";
 import { API_URL } from "../constants/api";
+import { formatINR } from "../lib/util";
 
 const AuthContext = createContext(null);
 const TOKEN_KEY = "auth_token";
-
-// We store all amounts in USD in DB (base currency)
-// All display amounts are converted using live rates
-const RATES_API = "https://api.frankfurter.app/latest?from=USD";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Live exchange rates (base: USD)
-  const [exchangeRates, setExchangeRates] = useState({});
-  const [ratesLoading, setRatesLoading] = useState(false);
-  const [ratesLastUpdated, setRatesLastUpdated] = useState(null);
-
-  // Fetch live rates from USD base
-  const fetchExchangeRates = useCallback(async () => {
-    setRatesLoading(true);
-    try {
-      const res = await fetch(RATES_API);
-      if (!res.ok) throw new Error("Failed to fetch rates");
-      const data = await res.json();
-      // data.rates = { INR: 83.5, EUR: 0.92, ... }
-      // Add USD itself as 1
-      setExchangeRates({ ...data.rates, USD: 1 });
-      setRatesLastUpdated(new Date());
-    } catch (e) {
-      console.error("Failed to fetch exchange rates:", e);
-    } finally {
-      setRatesLoading(false);
-    }
-  }, []);
-
-  // Fetch rates on app start
-  useEffect(() => {
-    fetchExchangeRates();
-  }, [fetchExchangeRates]);
-
-  // Re-fetch rates when user's currency changes
-  useEffect(() => {
-    if (user?.currency) {
-      fetchExchangeRates();
-    }
-  }, [user?.currency]);
 
   useEffect(() => {
     loadStoredAuth();
@@ -139,35 +102,6 @@ export function AuthProvider({ children }) {
     return data;
   };
 
-  // ✅ Convert any USD amount to user's selected currency
-  const convertAmount = useCallback((amountInUSD) => {
-    const currency = user?.currency || "USD";
-    if (currency === "USD") return amountInUSD;
-    const rate = exchangeRates[currency];
-    if (!rate) return amountInUSD;
-    return amountInUSD * rate;
-  }, [user?.currency, exchangeRates]);
-
-  // ✅ Get currency symbol for user's currency
-  const CURRENCY_SYMBOLS = {
-    USD: "$", INR: "₹", EUR: "€", GBP: "£",
-    JPY: "¥", AUD: "A$", CAD: "C$", CHF: "Fr",
-    CNY: "¥", SGD: "S$", AED: "د.إ", SAR: "﷼",
-    MYR: "RM", THB: "฿", KRW: "₩", BRL: "R$",
-  };
-
-  const currencySymbol = CURRENCY_SYMBOLS[user?.currency || "USD"] || "$";
-
-  // ✅ Format and convert in one call
-  // e.g. formatCurrency(100) → "₹8,350.00"
-  const formatCurrency = useCallback((amountInUSD) => {
-    const converted = convertAmount(amountInUSD);
-    return `${currencySymbol}${Math.abs(converted).toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
-  }, [convertAmount, currencySymbol]);
-
   const value = {
     user,
     token,
@@ -178,14 +112,8 @@ export function AuthProvider({ children }) {
     logout,
     updateProfile,
     updatePassword,
-    // Currency helpers
-    exchangeRates,
-    ratesLoading,
-    ratesLastUpdated,
-    convertAmount,
-    formatCurrency,
-    currencySymbol,
-    refreshRates: fetchExchangeRates,
+    formatCurrency: formatINR,
+    currencySymbol: "₹",
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

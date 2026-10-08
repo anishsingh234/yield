@@ -19,15 +19,6 @@ import { THEMES } from "../../constants/colors";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 
-const CURRENCIES = [
-  { code: "USD", symbol: "$", name: "US Dollar" },
-  { code: "INR", symbol: "₹", name: "Indian Rupee" },
-  { code: "EUR", symbol: "€", name: "Euro" },
-  { code: "GBP", symbol: "£", name: "British Pound" },
-  { code: "JPY", symbol: "¥", name: "Japanese Yen" },
-  { code: "AUD", symbol: "A$", name: "Australian Dollar" },
-];
-
 const LANGUAGES = [
   { code: "en", name: "English" },
   { code: "hi", name: "हिंदी (Hindi)" },
@@ -49,15 +40,11 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
 
   const [selectedTheme, setSelectedTheme] = useState(user?.theme || "purple");
-  const [selectedCurrency, setSelectedCurrency] = useState(
-    CURRENCIES.find((c) => c.code === user?.currency) || CURRENCIES[0],
-  );
   const [selectedLanguage, setSelectedLanguage] = useState(
     LANGUAGES.find((l) => l.code === user?.language) || LANGUAGES[0],
   );
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
-  const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [editNameModalVisible, setEditNameModalVisible] = useState(false);
@@ -85,19 +72,6 @@ export default function ProfileScreen() {
       setSelectedTheme(user?.theme || "purple");
     } finally {
       setSavingTheme(false);
-    }
-  };
-
-  const handleCurrencyChange = async (currency) => {
-    setSelectedCurrency(currency);
-    setCurrencyModalVisible(false);
-    try {
-      await updateProfile({ currency: currency.code });
-    } catch (e) {
-      Alert.alert("Error", e.message);
-      setSelectedCurrency(
-        CURRENCIES.find((c) => c.code === user?.currency) || CURRENCIES[0],
-      );
     }
   };
 
@@ -299,15 +273,6 @@ export default function ProfileScreen() {
             ]}
           >
             <SettingRow
-              icon="cash-outline"
-              label="Currency"
-              onPress={() => setCurrencyModalVisible(true)}
-            >
-              <Text style={[styles.settingValue, { color: colors.textLight }]}>
-                {selectedCurrency.symbol} {selectedCurrency.code}
-              </Text>
-            </SettingRow>
-            <SettingRow
               icon="language-outline"
               label="Language"
               onPress={() => setLanguageModalVisible(true)}
@@ -380,47 +345,6 @@ export default function ProfileScreen() {
           </Text>
         </View>
       </ScrollView>
-
-      {/* Currency Modal */}
-      <Modal visible={currencyModalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalSheet, { backgroundColor: colors.cardSolid }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>
-              Select Currency
-            </Text>
-            <FlatList
-              data={CURRENCIES}
-              keyExtractor={(item) => item.code}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[
-                    styles.modalItem,
-                    { borderBottomColor: colors.glassBorder },
-                  ]}
-                  onPress={() => handleCurrencyChange(item)}
-                >
-                  <Text style={[styles.modalItemText, { color: colors.text }]}>
-                    {item.symbol} {item.name}
-                  </Text>
-                  {selectedCurrency.code === item.code && (
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={20}
-                      color={colors.primary}
-                    />
-                  )}
-                </TouchableOpacity>
-              )}
-            />
-            <TouchableOpacity
-              style={[styles.modalClose, { backgroundColor: colors.primary }]}
-              onPress={() => setCurrencyModalVisible(false)}
-            >
-              <Text style={styles.modalCloseText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
 
       {/* Language Modal */}
       <Modal visible={languageModalVisible} animationType="slide" transparent>

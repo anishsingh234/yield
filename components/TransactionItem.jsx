@@ -43,7 +43,7 @@ export const TransactionItem = ({ item, onDelete }) => {
         </View>
         <View style={styles.transactionLeft}>
           <Text style={[styles.transactionTitle, { color: colors.text }]}>{item.title}</Text>
-          <Text style={[styles.transactionCategory, { color: colors.textLight }]}>{item.category}</Text>
+          <Text style={[styles.transactionCategory, { color: colors.textLight }]}>{item.category} · {(item.wallet || "daily").replace(/^./, (c) => c.toUpperCase())}</Text>
         </View>
         <View style={styles.transactionRight}>
           <Text
